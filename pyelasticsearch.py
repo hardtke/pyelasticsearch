@@ -124,6 +124,7 @@ except ImportError:
 from urllib import urlencode
 import logging
 import requests
+import random
 
 
 class ElasticSearchError(Exception):
@@ -145,7 +146,7 @@ class ElasticSearch(object):
     def __init__(self, url, timeout=60):
         if isinstance(url,(list,tuple)) and len(url) > 0:
             self.urls = list(url)
-            self.url = self.urls.pop(0)
+            self.nextUrl(Exception('empty url list'))
         else: 
             self.urls = []
             self.url = url
@@ -155,8 +156,10 @@ class ElasticSearch(object):
             self.url = self.url[:-1]
 
     def nextUrl(self, e):
-        if len(self.urls) > 0:
-            self.url = self.urls.pop(0)
+        length = len(self.urls)
+        if length > 0:
+            # use a random server for load balancing
+            self.url = self.urls.pop(random.randint(0,length-1))
             if self.url.endswith('/'):
                 self.url = self.url[:-1]
         else:
