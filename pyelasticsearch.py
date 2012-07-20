@@ -143,11 +143,24 @@ class ElasticSearch(object):
     """
 
     def __init__(self, url, timeout=60):
-        self.url = url
+        if isinstance(url,(list,tuple)) and len(url) > 0:
+            self.urls = list(url)
+            self.url = self.urls.pop(0)
+        else: 
+            self.urls = []
+            self.url = url
         self.timeout = timeout
 
         if self.url.endswith('/'):
             self.url = self.url[:-1]
+
+    def nextUrl(self, e):
+        if len(self.urls) > 0:
+            self.url = self.urls.pop(0)
+            if self.url.endswith('/'):
+                self.url = self.url[:-1]
+        else:
+            raise e
 
     def setup_logging(self):
         """
@@ -192,11 +205,16 @@ class ElasticSearch(object):
 
         logging.debug("making %s request to path: %s %s with body: %s" % (method, url, path, kwargs.get('data', {})))
         req_method = getattr(requests, method.lower())
-        resp = req_method(url, **kwargs)
-        logging.debug("response status: %s" % resp.status_code)
-        prepped_response = self._prep_response(resp.content)
-        logging.debug("got response %s" % prepped_response)
-        return prepped_response
+        try:
+            resp = req_method(url, **kwargs)
+            logging.debug("response status: %s" % resp.status_code)
+            prepped_response = self._prep_response(resp.content)
+            logging.debug("got response %s" % prepped_response)
+            return prepped_response
+        except requests.exceptions.ConnectionError as e:
+            self.nextUrl(e)
+            return self._send_request(method,path,body,querystring_args)
+
 
     def _prep_request(self, body):
         """
