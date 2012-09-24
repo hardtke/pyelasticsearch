@@ -143,7 +143,7 @@ class ElasticSearch(object):
     ElasticSearch connection object.
     """
 
-    def __init__(self, url, timeout=60):
+    def __init__(self, url, timeout=60,auth=None):
         if isinstance(url,(list,tuple)) and len(url) > 0:
             self.urls = list(url)
             self.nextUrl(Exception('empty url list'))
@@ -151,9 +151,13 @@ class ElasticSearch(object):
             self.urls = []
             self.url = url
         self.timeout = timeout
+        self.auth = auth
 
         if self.url.endswith('/'):
             self.url = self.url[:-1]
+    
+    def setAuth(self, auth):
+        self.auth = auth
 
     def nextUrl(self, e):
         length = len(self.urls)
@@ -198,6 +202,8 @@ class ElasticSearch(object):
         kwargs = {
             'timeout': self.timeout,
         }
+	if self.auth is not None:
+		kwargs['auth'] = self.auth
         url = self._build_url(path)
 
         if body:
@@ -210,6 +216,8 @@ class ElasticSearch(object):
         req_method = getattr(requests, method.lower())
         try:
             resp = req_method(url, **kwargs)
+	    if resp.status_code == 401:
+		raise requests.exceptions.ConnectionError('error','401 not authorized')    
             logging.debug("response status: %s" % resp.status_code)
             prepped_response = self._prep_response(resp.content)
             logging.debug("got response %s" % prepped_response)

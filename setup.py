@@ -3,12 +3,15 @@ import setuptools
 
 setup(
     name = "pyelasticsearch",
-    version = "0.0.6",
+    version = "0.0.8",
     description = "Lightweight python wrapper for elasticsearch.",
     long_description=open('README.rst', 'r').read(),
     author = 'Robert Eanes',
     author_email = 'python@robsinbox.com',
+    maintainer = 'David Hardtke',
+    maintainer_email = 'david@hardtke.net',
     py_modules = ['pyelasticsearch'],
+    scripts = ['pyelasticsearch.py'],
     classifiers = [
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',

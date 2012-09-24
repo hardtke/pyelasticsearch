@@ -16,6 +16,14 @@ allowing you to use native Python datatypes to index or perform queries.
 Example::
 
     conn = ElasticSearch('http://localhost:9200/')
+    # for a cluster, you can use an array -- if the first fails, it will try the next, and so forth.
+    conn = ElasticSearch(['http://node1.cluster.com:9200','http://node2.cluster.com:9200'])
+
+    # auth
+    # use authentication.  To use basic auth:
+    conn = ElasticSearch(['http://node1.cluster.com:9200','http://node2.cluster.com:9200'],auth=('user','password'))
+    # for a list of authentication methods see: http://docs.python-requests.org/en/latest/user/quickstart/#basic-authentication
+    
 
     # Index some documents.
     conn.index({"name":"Joe Tester", "age": 25, "title": "QA Master"}, "contacts", "person", 1)
